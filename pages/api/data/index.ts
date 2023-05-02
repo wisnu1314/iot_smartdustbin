@@ -14,13 +14,17 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const db = admin.firestore();
-  switch (req.method) {
-    case "GET":
-      const resp = await db.collection("dustbin_data").get();
-      const results = resp.docs.map(entry => entry.data());
-      res.status(200).json({ data: results });
-      break;
-    default:
-      break;
+  try {
+    switch (req.method) {
+      case "GET":
+        const resp = await db.collection("dustbin_data").get();
+        const results = resp.docs.map(entry => entry.data());
+        res.status(200).json({ data: results });
+        break;
+      default:
+        break;
+    }
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
   }
 }

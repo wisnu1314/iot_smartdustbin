@@ -1,186 +1,197 @@
 import React from "react";
 import {
-	Box,
-	Text,
-	NumberInput,
-	Input,
-	Button,
-	NumberInputField,
+  Box,
+  Text,
+  NumberInput,
+  Input,
+  Button,
+  NumberInputField,
 } from "@chakra-ui/react";
 import {
-	ResponsiveContainer,
-	LineChart,
-	CartesianGrid,
-	XAxis,
-	YAxis,
-	Tooltip,
-	Legend,
-	Line,
+  ResponsiveContainer,
+  LineChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  Line,
 } from "recharts";
 import { Inter } from "next/font/google";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import axios from "axios";
+import axiosFetch from "@/lib/axios";
 
 const inter = Inter({ subsets: ["latin"] });
 const data = [
-	{
-		name: "Page A",
-		uv: 4000,
-		pv: 2400,
-		amt: 2400,
-	},
-	{
-		name: "Page B",
-		uv: 3000,
-		pv: 1398,
-		amt: 2210,
-	},
-	{
-		name: "Page C",
-		uv: 2000,
-		pv: 9800,
-		amt: 2290,
-	},
-	{
-		name: "Page D",
-		uv: 2780,
-		pv: 3908,
-		amt: 2000,
-	},
-	{
-		name: "Page E",
-		uv: 1890,
-		pv: 4800,
-		amt: 2181,
-	},
-	{
-		name: "Page F",
-		uv: 2390,
-		pv: 3800,
-		amt: 2500,
-	},
-	{
-		name: "Page G",
-		uv: 3490,
-		pv: 4300,
-		amt: 2100,
-	},
+  {
+    name: "Page A",
+    uv: 4000,
+    pv: 2400,
+    amt: 2400,
+  },
+  {
+    name: "Page B",
+    uv: 3000,
+    pv: 1398,
+    amt: 2210,
+  },
+  {
+    name: "Page C",
+    uv: 2000,
+    pv: 9800,
+    amt: 2290,
+  },
+  {
+    name: "Page D",
+    uv: 2780,
+    pv: 3908,
+    amt: 2000,
+  },
+  {
+    name: "Page E",
+    uv: 1890,
+    pv: 4800,
+    amt: 2181,
+  },
+  {
+    name: "Page F",
+    uv: 2390,
+    pv: 3800,
+    amt: 2500,
+  },
+  {
+    name: "Page G",
+    uv: 3490,
+    pv: 4300,
+    amt: 2100,
+  },
 ];
 const Dashboard = () => {
-	const [mqttInput, setMqttInput] = useState("30000");
-	return (
-		<main
-			className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-			style={{ background: "white" }}
-		>
-			<Box
-				display="flex"
-				flexDirection="row"
-				justifyContent="space-between"
-				border="1vh solid"
-				borderColor="black"
-				borderRadius={20}
-				backgroundColor="white"
-				minW="100%"
-				minH="100%"
-				w="800px"
-				h="800px"
-				alignItems="center"
-				bottom={0}
-				lineHeight="100%"
-				gap={10}
-				paddingX={4}
-			>
-				<ResponsiveContainer width="30%" height="50%">
-					<LineChart
-						margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-						data={data}
-					>
-						<CartesianGrid strokeDasharray="3 3" />
-						<XAxis dataKey="name" />
-						<YAxis />
-						<Tooltip />
-						<Legend />
-						<Line type="monotone" dataKey="pv" stroke="#8884d8" />
-						<Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-					</LineChart>
-				</ResponsiveContainer>
-				<ResponsiveContainer width="30%" height="50%">
-					<LineChart
-						margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-						data={data}
-					>
-						<CartesianGrid strokeDasharray="3 3" />
-						<XAxis dataKey="name" />
-						<YAxis />
-						<Tooltip />
-						<Legend />
-						<Line type="monotone" dataKey="pv" stroke="#8884d8" />
-						<Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-					</LineChart>
-				</ResponsiveContainer>
-				<Box
-					display="flex"
-					alignItems="center"
-					justifyContent="center"
-					flexDirection="column"
-					gap={20}
-					w="20%"
-					h="95%"
-					border="0.5vh solid"
-					borderColor="black"
-					borderRadius={20}
-					background="green"
-				></Box>
-				<Box
-					display="flex"
-					alignItems="center"
-					justifyContent="center"
-					flexDirection="column"
-					gap={20}
-					w="20%"
-					h="95%"
-					border="0.5vh solid"
-					borderColor="black"
-					borderRadius={20}
-					background="green"
-				>
-					<Text
-						fontFamily={inter.className}
-						textColor="black"
-						fontWeight="bold"
-						fontSize={20}
-					>
-						MQTT Period
-					</Text>
-					<Input
-						value={mqttInput}
-						type="number"
-						min={1000}
-						onChange={(e) => setMqttInput(e.target.value)}
-						placeholder="30000"
-						size="lg"
-						textColor="black"
-						w="95%"
-					/>
-					<Button
-						background="yellow"
-						border="5px solid"
-						borderColor="black"
-						borderRadius={20}
-						w="95%"
-						h="30px"
-					>
-						<Text
-							fontFamily={inter.className}
-							textColor="black"
-							fontWeight="bold"
-						>
-							Submit
-						</Text>
-					</Button>
-				</Box>
-			</Box>
-		</main>
-	);
+  const [mqttInput, setMqttInput] = useState("30000");
+  const [dataFetched, setDataFetched] = useState(null);
+  const fetchData = useCallback(() => {
+    axiosFetch.get("api/data").then(res => setDataFetched(res.data));
+  }, [axiosFetch]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+  console.log("Data", dataFetched);
+  return (
+    <main
+      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
+      style={{ background: "white" }}
+    >
+      <Box
+        display="flex"
+        flexDirection="row"
+        justifyContent="space-between"
+        border="1vh solid"
+        borderColor="black"
+        borderRadius={20}
+        backgroundColor="white"
+        minW="100%"
+        minH="100%"
+        w="800px"
+        h="800px"
+        alignItems="center"
+        bottom={0}
+        lineHeight="100%"
+        gap={10}
+        paddingX={4}
+      >
+        <ResponsiveContainer width="30%" height="50%">
+          <LineChart
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            data={data}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="pv" stroke="#8884d8" />
+            <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+          </LineChart>
+        </ResponsiveContainer>
+        <ResponsiveContainer width="30%" height="50%">
+          <LineChart
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            data={data}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="pv" stroke="#8884d8" />
+            <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+          </LineChart>
+        </ResponsiveContainer>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          flexDirection="column"
+          gap={20}
+          w="20%"
+          h="95%"
+          border="0.5vh solid"
+          borderColor="black"
+          borderRadius={20}
+          background="green"
+        ></Box>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          flexDirection="column"
+          gap={20}
+          w="20%"
+          h="95%"
+          border="0.5vh solid"
+          borderColor="black"
+          borderRadius={20}
+          background="green"
+        >
+          <Text
+            fontFamily={inter.className}
+            textColor="black"
+            fontWeight="bold"
+            fontSize={20}
+          >
+            MQTT Period
+          </Text>
+          <Input
+            value={mqttInput}
+            type="number"
+            min={3000}
+            step={500}
+            onChange={(e: any) => setMqttInput(e.target.value)}
+            placeholder="30000"
+            size="lg"
+            textColor="black"
+            w="95%"
+          />
+          <Button
+            background="yellow"
+            border="5px solid"
+            borderColor="black"
+            borderRadius={20}
+            w="95%"
+            h="30px"
+          >
+            <Text
+              fontFamily={inter.className}
+              textColor="black"
+              fontWeight="bold"
+            >
+              Submit
+            </Text>
+          </Button>
+        </Box>
+      </Box>
+    </main>
+  );
 };
 export default Dashboard;
