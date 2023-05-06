@@ -2,10 +2,11 @@ import React from "react";
 import {
   Box,
   Text,
-  NumberInput,
   Input,
   Button,
-  NumberInputField,
+  InputLeftAddon,
+  Select,
+  InputGroup,
 } from "@chakra-ui/react";
 import {
   ResponsiveContainer,
@@ -19,9 +20,9 @@ import {
 } from "recharts";
 import { Inter } from "next/font/google";
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
 import axiosFetch from "@/lib/axios";
-
+import Sussy from "./Sussy.svg";
+const susicon = require("./Sussy.svg") as string;
 const inter = Inter({ subsets: ["latin"] });
 const data = [
   {
@@ -67,12 +68,44 @@ const data = [
     amt: 2100,
   },
 ];
+const DeviceRate = () => {
+  return (
+    <Box
+      display="flex"
+      justifyContent="space-around"
+      flexDirection="column"
+      w="90%"
+      h="60%"
+      border="0.5vh solid"
+      borderColor="black"
+      borderRadius={20}
+    >
+      <Box display="flex" justifyContent="center">
+        <InputGroup paddingX={5} gap={20} size="lg">
+          <InputLeftAddon w="50%">
+            <Text textColor="black">Full Rate</Text>
+          </InputLeftAddon>
+          <Input w="50%" disabled defaultValue={"1000"}></Input>
+        </InputGroup>
+      </Box>
+      <Box display="flex" justifyContent="center">
+        <InputGroup paddingX={5} gap={20} size="lg">
+          <InputLeftAddon w="50%">
+            <Text textColor="black">Predicted Full Rate</Text>
+          </InputLeftAddon>
+          <Input w="50%" disabled defaultValue={"1000"}></Input>
+        </InputGroup>
+      </Box>
+    </Box>
+  );
+};
 const Dashboard = () => {
   const [mqttInput, setMqttInput] = useState("30000");
   const [dataFetched, setDataFetched] = useState(null);
+  const [device, setDevice] = useState("1");
   const fetchData = useCallback(() => {
-    axiosFetch.get("api/data").then(res => setDataFetched(res.data));
-  }, [axiosFetch]);
+    axiosFetch.get("api/data").then((res) => setDataFetched(res.data));
+  }, []);
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -131,7 +164,7 @@ const Dashboard = () => {
         <Box
           display="flex"
           alignItems="center"
-          justifyContent="center"
+          justifyContent="space-around"
           flexDirection="column"
           gap={20}
           w="20%"
@@ -140,7 +173,23 @@ const Dashboard = () => {
           borderColor="black"
           borderRadius={20}
           background="green"
-        ></Box>
+        >
+          <Select
+            paddingTop={20}
+            w="full"
+            icon={Sussy}
+            background="yellow"
+            textColor="black"
+            defaultValue="1"
+            value={device}
+            onChange={(e) => setDevice(e.target.value)}
+          >
+            <option value="1">Bintang Dustbin</option>
+            <option value="2">Marcel Dustbin</option>
+            <option value="3">Fahkry Dustbin</option>
+          </Select>
+          <DeviceRate />
+        </Box>
         <Box
           display="flex"
           alignItems="center"
