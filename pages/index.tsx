@@ -7,6 +7,7 @@ import {
   InputLeftAddon,
   Select,
   InputGroup,
+  Image,
 } from "@chakra-ui/react";
 import {
   ResponsiveContainer,
@@ -25,19 +26,19 @@ import Sussy from "./Sussy.svg";
 import client from "../mqtt/index";
 
 client.on("connect", function () {
-  client.subscribe("durationOn", function (err) {
+  client.subscribe("durationOn", function (err: any) {
     if (err) {
       console.log(err.message);
     }
     console.log();
   });
-  client.subscribe("dataStatus", function (err) {
+  client.subscribe("dataStatus", function (err: any) {
     if (err) {
       console.log(err.message);
     }
   });
 });
-client.on("message", async function (topic, message) {
+client.on("message", async function (topic: any, message: any) {
   // message is Buffer
   // console.log(topic);
   if (topic === "durationOn") {
@@ -45,6 +46,8 @@ client.on("message", async function (topic, message) {
   }
 });
 const susicon = require("./Sussy.svg") as string;
+const datax =
+  "https://drive.google.com/uc?export=download&id=1VvJvHNjg0a_uq6b-rWdiyOEIUnj2JGPC";
 const inter = Inter({ subsets: ["latin"] });
 const data = [
   {
@@ -90,7 +93,7 @@ const data = [
     amt: 2100,
   },
 ];
-const DeviceRate = () => {
+const DeviceRate = (id: string) => {
   return (
     <Box
       display="flex"
@@ -126,7 +129,7 @@ const Dashboard = () => {
   const [dataFetched, setDataFetched] = useState(null);
   const [device, setDevice] = useState("dustbin_1");
   const fetchData = useCallback(() => {
-    axiosFetch.get("api/data").then(res => setDataFetched(res.data));
+    axiosFetch.get("api/data").then((res) => setDataFetched(res.data));
   }, []);
   useEffect(() => {
     fetchData();
@@ -154,6 +157,9 @@ const Dashboard = () => {
         lineHeight="100%"
         gap={10}
         paddingX={4}
+        backgroundImage={device === "dustbin_2" ? datax : ""}
+        backgroundClip="content-box"
+        backgroundRepeat="no-repeat"
       >
         <ResponsiveContainer width="30%" height="50%">
           <LineChart
@@ -204,13 +210,13 @@ const Dashboard = () => {
             textColor="black"
             defaultValue="1"
             value={device}
-            onChange={e => setDevice(e.target.value)}
+            onChange={(e) => setDevice(e.target.value)}
           >
-            <option value="dustbin_1">Bintang Dustbin</option>
-            <option value="dustbin_2">Marcel Dustbin</option>
+            <option value="dustbin_1">Marcel Dustbin</option>
+            <option value="dustbin_2">Bintang Dustbin</option>
             <option value="dustbin_3">Fahkry Dustbin</option>
           </Select>
-          <DeviceRate />
+          {DeviceRate(device)}
         </Box>
         <Box
           display="flex"
