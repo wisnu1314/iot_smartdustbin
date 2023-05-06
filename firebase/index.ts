@@ -21,6 +21,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({

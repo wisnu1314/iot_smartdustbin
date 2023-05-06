@@ -18,7 +18,9 @@ export default async function handler(
     switch (req.method) {
       case "GET":
         const resp = await db.collection("dustbin_data").get();
-        const results = resp.docs.map(entry => entry.data());
+        const results = resp.docs.map(entry => {
+          return { ...entry.data(), id: entry.id };
+        });
         res.status(200).json({ data: results });
         break;
       default:

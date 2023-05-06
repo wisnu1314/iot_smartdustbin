@@ -21,7 +21,9 @@ export default async function handler(
     switch (req.method) {
       case "GET":
         resp = await db.collection("status").get();
-        results = resp.docs.map(entry => entry.data());
+        results = resp.docs.map(entry => {
+          return { ...entry.data(), id: entry.id };
+        });
         res.status(200).json({ data: results });
         break;
       case "PUT":
