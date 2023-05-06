@@ -102,7 +102,7 @@ const DeviceRate = () => {
 const Dashboard = () => {
   const [mqttInput, setMqttInput] = useState("30000");
   const [dataFetched, setDataFetched] = useState(null);
-  const [device, setDevice] = useState("1");
+  const [device, setDevice] = useState("dustbin_1");
   const fetchData = useCallback(() => {
     axiosFetch.get("api/data").then((res) => setDataFetched(res.data));
   }, []);
@@ -184,9 +184,9 @@ const Dashboard = () => {
             value={device}
             onChange={(e) => setDevice(e.target.value)}
           >
-            <option value="1">Bintang Dustbin</option>
-            <option value="2">Marcel Dustbin</option>
-            <option value="3">Fahkry Dustbin</option>
+            <option value="dustbin_1">Bintang Dustbin</option>
+            <option value="dustbin_2">Marcel Dustbin</option>
+            <option value="dustbin_3">Fahkry Dustbin</option>
           </Select>
           <DeviceRate />
         </Box>
