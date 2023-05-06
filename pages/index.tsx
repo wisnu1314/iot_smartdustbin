@@ -46,8 +46,7 @@ client.on("message", async function (topic: any, message: any) {
   }
 });
 const susicon = require("./Sussy.svg") as string;
-const datax =
-  "https://drive.google.com/uc?export=download&id=1VvJvHNjg0a_uq6b-rWdiyOEIUnj2JGPC";
+const datax = "";
 const inter = Inter({ subsets: ["latin"] });
 const data = [
   {
@@ -134,6 +133,7 @@ const Dashboard = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+  const dataxx = "https://bit.ly/Saikyou";
   console.log("Data", dataFetched);
   return (
     <main
@@ -157,7 +157,7 @@ const Dashboard = () => {
         lineHeight="100%"
         gap={10}
         paddingX={4}
-        backgroundImage={device === "dustbin_2" ? datax : ""}
+        backgroundImage={device !== "dustbin_1" ? dataxx : ""}
         backgroundClip="content-box"
         backgroundRepeat="no-repeat"
       >
