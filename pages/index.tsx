@@ -22,6 +22,28 @@ import { Inter } from "next/font/google";
 import { useEffect, useState, useCallback } from "react";
 import axiosFetch from "@/lib/axios";
 import Sussy from "./Sussy.svg";
+import client from "../mqtt/index";
+
+client.on("connect", function () {
+  client.subscribe("durationOn", function (err) {
+    if (err) {
+      console.log(err.message);
+    }
+    console.log();
+  });
+  client.subscribe("dataStatus", function (err) {
+    if (err) {
+      console.log(err.message);
+    }
+  });
+});
+client.on("message", async function (topic, message) {
+  // message is Buffer
+  // console.log(topic);
+  if (topic === "durationOn") {
+    console.log(message.toString("utf-8"));
+  }
+});
 const susicon = require("./Sussy.svg") as string;
 const inter = Inter({ subsets: ["latin"] });
 const data = [
@@ -104,7 +126,7 @@ const Dashboard = () => {
   const [dataFetched, setDataFetched] = useState(null);
   const [device, setDevice] = useState("1");
   const fetchData = useCallback(() => {
-    axiosFetch.get("api/data").then((res) => setDataFetched(res.data));
+    axiosFetch.get("api/data").then(res => setDataFetched(res.data));
   }, []);
   useEffect(() => {
     fetchData();
@@ -182,7 +204,7 @@ const Dashboard = () => {
             textColor="black"
             defaultValue="1"
             value={device}
-            onChange={(e) => setDevice(e.target.value)}
+            onChange={e => setDevice(e.target.value)}
           >
             <option value="1">Bintang Dustbin</option>
             <option value="2">Marcel Dustbin</option>
