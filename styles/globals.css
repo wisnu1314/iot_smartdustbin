@@ -25,3 +25,10 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+.react-datepicker__input-container input {
+  width: 100%;
+}
+.react-datepicker {
+  width: 100% !important;
+  z-index: 2;
+}
