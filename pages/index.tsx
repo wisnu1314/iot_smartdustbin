@@ -96,10 +96,14 @@ const data = [
 
 const DeviceRate = (props: {
   id: string;
-  dateRange: Date;
-  setDateRange: (selected: Date) => void;
+  startDate: Date;
+  setStartDate: (selectedStart: Date) => void;
+  endDate: Date;
+  setEndDate: (selectedEnd: Date) => void;
+  groupby: string;
+  setGroupBy: (selectedGroup: string) => void;
 }) => {
-  console.log("props", props.dateRange);
+  console.log("props", props.startDate);
   return (
     <Box
       display="flex"
@@ -129,17 +133,51 @@ const DeviceRate = (props: {
       </Box>
       <InputGroup paddingX={5} gap={20} size="lg">
         <InputLeftAddon w="50%">
-          <Text textColor="black">Filter</Text>
+          <Text textColor="black">Filter Start Date</Text>
         </InputLeftAddon>
         <Box w="50%" textColor="black">
           <DatePicker
             dateFormat="dd/MM/yyyy hh:mm"
-            selected={props.dateRange}
+            selected={props.startDate}
             onChange={(date: Date) => {
-              props.setDateRange(date);
+              props.setStartDate(date);
             }}
-          ></DatePicker>
+            showTimeSelect
+          />
         </Box>
+      </InputGroup>
+      <InputGroup paddingX={5} gap={20} size="lg">
+        <InputLeftAddon w="50%">
+          <Text textColor="black">Filter End Date</Text>
+        </InputLeftAddon>
+        <Box w="50%" textColor="black">
+          <DatePicker
+            dateFormat="dd/MM/yyyy hh:mm"
+            selected={props.endDate}
+            onChange={(date: Date) => {
+              props.setEndDate(date);
+            }}
+            showTimeSelect
+          />
+        </Box>
+      </InputGroup>
+      <InputGroup paddingX={5} gap={20} size="lg">
+        <InputLeftAddon w="50%">
+          <Text textColor="black">Group By</Text>
+        </InputLeftAddon>
+        <Select
+          w="full"
+          icon={Sussy}
+          background="yellow"
+          textColor="black"
+          defaultValue="day"
+          value={props.groupby}
+          onChange={(e: any) => props.setGroupBy(e.target.value)}
+        >
+          <option value="day">Day</option>
+          <option value="hour">Hour</option>
+          <option value="minute">Minute</option>
+        </Select>
       </InputGroup>
     </Box>
   );
@@ -148,7 +186,9 @@ const Dashboard = () => {
   const [mqttInput, setMqttInput] = useState("30000");
   const [dataFetched, setDataFetched] = useState(null);
   const [device, setDevice] = useState("dustbin_1");
-  const [dateRange, setDateRange] = useState(new Date());
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [groupby, setGroupby] = useState("day");
   const fetchData = useCallback(() => {
     axiosFetch.get("api/data").then((res) => setDataFetched(res.data));
   }, []);
@@ -156,7 +196,7 @@ const Dashboard = () => {
     fetchData();
   }, [fetchData]);
   // const dataxx = "https://bit.ly/Saikyou";
-  console.log("Data", dataFetched, dateRange);
+  console.log("Data", dataFetched, startDate);
   return (
     <main
       className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
@@ -246,11 +286,14 @@ const Dashboard = () => {
             <option value="dustbin_2">Bintang Dustbin</option>
             <option value="dustbin_3">Fahkry Dustbin</option>
           </Select>
-
           <DeviceRate
             id={device}
-            dateRange={dateRange}
-            setDateRange={setDateRange}
+            startDate={startDate}
+            setStartDate={setStartDate}
+            endDate={endDate}
+            setEndDate={setEndDate}
+            groupby={groupby}
+            setGroupBy={setGroupby}
           />
         </Box>
         <Box
@@ -292,6 +335,7 @@ const Dashboard = () => {
             borderRadius={20}
             w="95%"
             h="30px"
+            zIndex={0}
           >
             <Text
               fontFamily={inter.className}

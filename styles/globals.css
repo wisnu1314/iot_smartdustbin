@@ -30,5 +30,8 @@ body {
 }
 .react-datepicker {
   width: 100% !important;
-  z-index: 2;
+  z-index: 100;
+}
+.react-datepicker-popper {
+  z-index: 100 !important;
 }
