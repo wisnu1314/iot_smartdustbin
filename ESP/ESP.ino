@@ -6,7 +6,7 @@
 const char* ssid = "29 lt 2";
 const char* password = "bangbayarbang29";
 const char* mqtt_server = "192.168.0.56";
-const char* broker = "broker.hivemq.com";
+const char* broker = "broker.emqx.io";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -44,6 +44,16 @@ float distanceCm;
 float distanceCmTop;
 float distanceCmLeft;
 float distanceCmRight;
+String id = "dustbin_1";
+float volume;
+float height=29.5;
+float width= 24;
+float length= 26;
+int leftValidation;
+int rightValidation;
+unsigned long lastMillis=0;
+unsigned long additionTime=0x00004E20;
+float period=20000;
 
 void setup_wifi() {
   delay(10);
@@ -130,7 +140,9 @@ int serialPrintInterval = 2000;
 
 void loop() {
   static boolean newDataReady = 0;
-
+  if(!client.connected()){   
+    reconnect();
+  }
   // check for new data/start next conversion:
   if (LoadCell.update()) newDataReady = true;
 
@@ -138,8 +150,8 @@ void loop() {
   if (newDataReady) {
     if (millis() > t + serialPrintInterval) {
       float i = LoadCell.getData();
-      Serial.print("Load_cell output val: ");
-      Serial.println(i);
+      // Serial.print("Load_cell output val: ");
+      // Serial.println(i);
       
       newDataReady = 0;
       t = millis();
@@ -159,8 +171,8 @@ void loop() {
       distanceCmTop = duration * SOUND_SPEED/2;
   
       // Prints the distance in the Serial Monitor
-      Serial.print("Distance Top (cm): ");
-      Serial.println(distanceCmTop);
+      // Serial.print("Distance Top (cm): ");
+      // Serial.println(distanceCmTop);
 
       delay(1000);
       // Clears the trigPin
@@ -178,8 +190,8 @@ void loop() {
       distanceCmLeft = duration * SOUND_SPEED/2;
   
       // Prints the distance in the Serial Monitor
-      Serial.print("Distance Left (cm): ");
-      Serial.println(distanceCmLeft);
+      // Serial.print("Distance Left (cm): ");
+      // Serial.println(distanceCmLeft);
 
 
 
@@ -199,11 +211,27 @@ void loop() {
       distanceCmRight = duration * SOUND_SPEED/2;
   
       // Prints the distance in the Serial Monitor
-      Serial.print("Distance Right (cm): ");
-      Serial.println(distanceCmRight);
-      Serial.print("\n");
-      String data = "load_cell:"+String(i)+";top:"+String(distanceCmTop)+";left:"+String(distanceCmLeft)+";right:"+String(distanceCmRight);
-      client.publish("data_sampah",data.c_str());
+      // Serial.print("Distance Right (cm): ");
+      // Serial.println(distanceCmRight);
+      // Serial.print("\n");
+      volume = (height-distanceCmTop)*width*length;  
+      leftValidation = (distanceCmLeft<15 )?1:0;    
+      rightValidation = (distanceCmRight<15 )?1:0;  
+
+      // Serial.println(1000);
+      Serial.println(String((millis()-lastMillis))+"buka"+String(lastMillis)+"millis"+String(millis()));
+      if(volume < -2000 && (millis()-lastMillis)<=period && (millis()-lastMillis)>=period-10000){
+        Serial.println("harusnya anda ga ngirim");
+        lastMillis=(lastMillis+additionTime);
+      }
+      Serial.println(String((millis()-lastMillis))+"tutup"+String(lastMillis)+"millis"+String(millis()));
+      if((millis()-lastMillis)>=period || (leftValidation==true && rightValidation==true) || i>=9000){
+          lastMillis=millis();
+          String data = "id:"+id+";load_cell:"+String(i)+";volume:"+String(volume)+";left:"+String(leftValidation)+";right:"+String(rightValidation);
+          Serial.println(data);      
+          client.publish("data_sampah",data.c_str());
+        }
+      
 //      StaticJsonBuffer<300> JSONbuffer;
 //      JsonObject& JSONencoder = JSONbuffer.createObject();
 //

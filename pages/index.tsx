@@ -23,13 +23,14 @@ import { useEffect, useState, useCallback } from "react";
 import axiosFetch from "@/lib/axios";
 import Sussy from "./Sussy.svg";
 import client from "../mqtt/index";
+import nodemailer from "nodemailer";
 
 client.on("connect", function () {
-  client.subscribe("durationOn", function (err: any) {
+  client.subscribe("data_sampah", function (err: any) {
     if (err) {
       console.log(err.message);
     }
-    console.log();
+    console.log("asdssd");
   });
   client.subscribe("dataStatus", function (err: any) {
     if (err) {
@@ -40,7 +41,9 @@ client.on("connect", function () {
 client.on("message", async function (topic: any, message: any) {
   // message is Buffer
   // console.log(topic);
-  if (topic === "durationOn") {
+  if (topic === "data_sampah") {
+    console.log("asd");
+
     console.log(message.toString("utf-8"));
   }
 });
@@ -130,7 +133,7 @@ const Dashboard = () => {
   const [device, setDevice] = useState("dustbin_1");
 
   const fetchData = useCallback(() => {
-    axiosFetch.get("api/data").then((res) => setDataFetched(res.data));
+    axiosFetch.get("api/data").then(res => setDataFetched(res.data));
   }, []);
   useEffect(() => {
     fetchData();
@@ -219,7 +222,7 @@ const Dashboard = () => {
             textColor="black"
             defaultValue="1"
             value={device}
-            onChange={(e) => setDevice(e.target.value)}
+            onChange={e => setDevice(e.target.value)}
           >
             <option value="dustbin_1">Marcel Dustbin</option>
             <option value="dustbin_2">Bintang Dustbin</option>
