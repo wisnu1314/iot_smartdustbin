@@ -54,6 +54,7 @@ int rightValidation;
 unsigned long lastMillis=0;
 unsigned long additionTime=0x00004E20;
 float period=20000;
+bool invalid = false;
 
 void setup_wifi() {
   delay(10);
@@ -185,16 +186,11 @@ void loop() {
   
       // Reads the echoPin, returns the sound wave travel time in microseconds
       duration = pulseIn(echoPin2, HIGH);
-  
       // Calculate the distance
       distanceCmLeft = duration * SOUND_SPEED/2;
-  
       // Prints the distance in the Serial Monitor
       // Serial.print("Distance Left (cm): ");
       // Serial.println(distanceCmLeft);
-
-
-
       delay(1000);
       // Clears the trigPin
       digitalWrite(trigPin3, LOW);
@@ -219,17 +215,28 @@ void loop() {
       rightValidation = (distanceCmRight<15 )?1:0;  
 
       // Serial.println(1000);
-      Serial.println(String((millis()-lastMillis))+"buka"+String(lastMillis)+"millis"+String(millis()));
+      Serial.println(String((millis()-lastMillis))+" buka "+String(lastMillis)+" millis "+ String(millis()));
       if(volume < -2000 && (millis()-lastMillis)<=period && (millis()-lastMillis)>=period-10000){
         Serial.println("harusnya anda ga ngirim");
-        lastMillis=(lastMillis+additionTime);
+        // lastMillis=(double)(lastMillis+additionTime);
+        lastMillis += 20000ULL;
+        Serial.println("Invalid " + String(lastMillis - millis()));
+        invalid = true;
       }
-      Serial.println(String((millis()-lastMillis))+"tutup"+String(lastMillis)+"millis"+String(millis()));
-      if((millis()-lastMillis)>=period || (leftValidation==true && rightValidation==true) || i>=9000){
-          lastMillis=millis();
-          String data = "id:"+id+";load_cell:"+String(i)+";volume:"+String(volume)+";left:"+String(leftValidation)+";right:"+String(rightValidation);
-          Serial.println(data);      
-          client.publish("data_sampah",data.c_str());
+      
+      Serial.println(String((millis()-lastMillis)) + " " + String((lastMillis - millis()))+" tutup "+String(lastMillis)+" millis "+String(millis()));
+      if(invalid){
+        invalid = false;
+        lastMillis = millis() - 10000ULL;
+      }
+      else{
+        if((((millis()-lastMillis)>=period) || (leftValidation==true && rightValidation==true) || i>=9000) && !invalid){
+            lastMillis=millis();
+            String data = "id: "+id+"; load_cell: "+String(i)+";volume: "+String(volume)+";left: "+String(leftValidation)+"; right: "+String(rightValidation);
+            Serial.println(data);
+            Serial.println(lastMillis + " " + millis());      
+            client.publish("data_sampah",data.c_str());
+          }
         }
       
 //      StaticJsonBuffer<300> JSONbuffer;
