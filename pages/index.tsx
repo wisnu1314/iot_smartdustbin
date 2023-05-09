@@ -166,6 +166,7 @@ const Dashboard = () => {
         }
         backgroundClip="content-box"
         backgroundRepeat="no-repeat"
+        backgroundSize="100px 100px"
       >
         <ResponsiveContainer width="30%" height="50%">
           <LineChart

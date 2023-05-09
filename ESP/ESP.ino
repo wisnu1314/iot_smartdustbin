@@ -6,6 +6,7 @@
 const char* ssid = "[Redacted]";
 const char* password = "[Redacted]";
 const char* mqtt_server = "192.168.0.56";
+const char* broker = "broker.hivemq.com";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -116,9 +117,9 @@ void setup() {
 
   pinMode(trigPin3, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin3, INPUT); // Sets the echoPin as an Input
-//  setup_wifi();
+  setup_wifi();
   
-//  client.setServer(mqtt_server, 1883);
+  client.setServer(broker, 1883);
 //  client.setCallback(callback);
 }
 
