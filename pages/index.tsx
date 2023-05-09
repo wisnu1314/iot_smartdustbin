@@ -24,6 +24,8 @@ import axiosFetch from "@/lib/axios";
 import Sussy from "./Sussy.svg";
 import client from "../mqtt/index";
 import nodemailer from "nodemailer";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 client.on("connect", function () {
   client.subscribe("data_sampah", function (err: any) {
@@ -95,7 +97,16 @@ const data = [
   },
 ];
 
-const DeviceRate = (id: string) => {
+const DeviceRate = (props: {
+  id: string;
+  startDate: Date;
+  setStartDate: (selectedStart: Date) => void;
+  endDate: Date;
+  setEndDate: (selectedEnd: Date) => void;
+  groupby: string;
+  setGroupBy: (selectedGroup: string) => void;
+}) => {
+  console.log("props", props.startDate);
   return (
     <Box
       display="flex"
@@ -123,7 +134,66 @@ const DeviceRate = (id: string) => {
           <Input w="50%" disabled defaultValue={"1000"}></Input>
         </InputGroup>
       </Box>
-      <Box display="flex" justifyContent="center"></Box>
+      <Box display="flex" justifyContent="center" zIndex={0}>
+        <InputGroup paddingX={5} gap={20} size="lg">
+          <InputLeftAddon w="50%">
+            <Text textColor="black">Group By</Text>
+          </InputLeftAddon>
+          <Select
+            w="full"
+            icon={Sussy}
+            background="yellow"
+            textColor="black"
+            defaultValue="day"
+            value={props.groupby}
+            onChange={(e: any) => props.setGroupBy(e.target.value)}
+          >
+            <option value="day">Day</option>
+            <option value="hour">Hour</option>
+            <option value="minute">Minute</option>
+          </Select>
+        </InputGroup>
+      </Box>
+      <Box display="flex" justifyContent="center" zIndex={0}>
+        <InputGroup paddingX={5} gap={20} size="lg">
+          <InputLeftAddon w="50%">
+            <Text textColor="black">Filter Start Date</Text>
+          </InputLeftAddon>
+          <Box w="50%" textColor="black">
+            <DatePicker
+              dateFormat="dd/MM/yyyy hh:mm"
+              selected={props.startDate}
+              onChange={(date: Date) => {
+                props.setStartDate(date);
+                if (date > props.endDate) {
+                  props.setEndDate(date);
+                }
+              }}
+              showTimeSelect
+            />
+          </Box>
+        </InputGroup>
+      </Box>
+      <Box display="flex" justifyContent="center" zIndex={0}>
+        <InputGroup paddingX={5} gap={20} size="lg">
+          <InputLeftAddon w="50%">
+            <Text textColor="black">Filter End Date</Text>
+          </InputLeftAddon>
+          <Box w="50%" textColor="black">
+            <DatePicker
+              dateFormat="dd/MM/yyyy hh:mm"
+              selected={props.endDate}
+              onChange={(date: Date) => {
+                props.setEndDate(date);
+                if (date < props.startDate) {
+                  props.setStartDate(date);
+                }
+              }}
+              showTimeSelect
+            />
+          </Box>
+        </InputGroup>
+      </Box>
     </Box>
   );
 };
@@ -131,7 +201,9 @@ const Dashboard = () => {
   const [mqttInput, setMqttInput] = useState("30000");
   const [dataFetched, setDataFetched] = useState(null);
   const [device, setDevice] = useState("dustbin_1");
-
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [groupby, setGroupby] = useState("day");
   const fetchData = useCallback(() => {
     axiosFetch.get("api/data").then(res => setDataFetched(res.data));
   }, []);
@@ -139,7 +211,7 @@ const Dashboard = () => {
     fetchData();
   }, [fetchData]);
   // const dataxx = "https://bit.ly/Saikyou";
-  console.log("Data", dataFetched);
+  console.log("Data", dataFetched, startDate, endDate, groupby);
   return (
     <main
       className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
@@ -155,9 +227,10 @@ const Dashboard = () => {
         backgroundColor="white"
         minW="100%"
         minH="100%"
-        w="800px"
-        h="800px"
+        // w="100%"
+        h="750px"
         alignItems="center"
+        alignSelf="center"
         bottom={0}
         lineHeight="100%"
         gap={10}
@@ -207,7 +280,7 @@ const Dashboard = () => {
           justifyContent="space-around"
           flexDirection="column"
           gap={20}
-          w="20%"
+          w="30%"
           h="95%"
           border="0.5vh solid"
           borderColor="black"
@@ -222,14 +295,21 @@ const Dashboard = () => {
             textColor="black"
             defaultValue="1"
             value={device}
-            onChange={e => setDevice(e.target.value)}
+            onChange={(e: any) => setDevice(e.target.value)}
           >
             <option value="dustbin_1">Marcel Dustbin</option>
             <option value="dustbin_2">Bintang Dustbin</option>
             <option value="dustbin_3">Fahkry Dustbin</option>
           </Select>
-
-          {DeviceRate(device)}
+          <DeviceRate
+            id={device}
+            startDate={startDate}
+            setStartDate={setStartDate}
+            endDate={endDate}
+            setEndDate={setEndDate}
+            groupby={groupby}
+            setGroupBy={setGroupby}
+          />
         </Box>
         <Box
           display="flex"
@@ -237,7 +317,7 @@ const Dashboard = () => {
           justifyContent="center"
           flexDirection="column"
           gap={20}
-          w="20%"
+          w="10%"
           h="95%"
           border="0.5vh solid"
           borderColor="black"
@@ -270,6 +350,7 @@ const Dashboard = () => {
             borderRadius={20}
             w="95%"
             h="30px"
+            zIndex={0}
           >
             <Text
               fontFamily={inter.className}
