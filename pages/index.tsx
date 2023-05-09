@@ -26,6 +26,7 @@ import client from "../mqtt/index";
 import nodemailer from "nodemailer";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import admin from "@/firebase";
 
 client.on("connect", function () {
   client.subscribe("data_sampah", function (err: any) {
@@ -44,9 +45,18 @@ client.on("message", async function (topic: any, message: any) {
   // message is Buffer
   // console.log(topic);
   if (topic === "data_sampah") {
-    console.log("asd");
-
     console.log(message.toString("utf-8"));
+    const data_sampah = (message.toString("utf-8") as string).split(";");
+    const db = admin.firestore();
+    const { id } = await db.collection("dustbin_data").add({
+      id: data_sampah[0],
+      weight: parseInt(data_sampah[1]),
+      volume: parseInt(data_sampah[2]),
+      leftSensor: data_sampah[3] == "1" ? true : false,
+      rightSensor: data_sampah[4] == "1" ? true : false,
+      timestamp: new Date().toISOString(),
+    });
+    console.log(id);
   }
 });
 const susicon = require("./Sussy.svg") as string;
