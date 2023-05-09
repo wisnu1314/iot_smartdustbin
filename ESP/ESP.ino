@@ -1,10 +1,10 @@
-#include <ArduinoJson.h>
+// #include <ArduinoJson.h>
 
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-const char* ssid = "[Redacted]";
-const char* password = "[Redacted]";
+const char* ssid = "29 lt 2";
+const char* password = "bangbayarbang29";
 const char* mqtt_server = "192.168.0.56";
 const char* broker = "broker.hivemq.com";
 
@@ -41,6 +41,9 @@ HX711_ADC LoadCell(HX711_dout, HX711_sck);
 unsigned long t = 0;
 long duration;
 float distanceCm;
+float distanceCmTop;
+float distanceCmLeft;
+float distanceCmRight;
 
 void setup_wifi() {
   delay(10);
@@ -153,11 +156,11 @@ void loop() {
       duration = pulseIn(echoPin, HIGH);
   
       // Calculate the distance
-      distanceCm = duration * SOUND_SPEED/2;
+      distanceCmTop = duration * SOUND_SPEED/2;
   
       // Prints the distance in the Serial Monitor
       Serial.print("Distance Top (cm): ");
-      Serial.println(distanceCm);
+      Serial.println(distanceCmTop);
 
       delay(1000);
       // Clears the trigPin
@@ -172,11 +175,11 @@ void loop() {
       duration = pulseIn(echoPin2, HIGH);
   
       // Calculate the distance
-      distanceCm = duration * SOUND_SPEED/2;
+      distanceCmLeft = duration * SOUND_SPEED/2;
   
       // Prints the distance in the Serial Monitor
       Serial.print("Distance Left (cm): ");
-      Serial.println(distanceCm);
+      Serial.println(distanceCmLeft);
 
 
 
@@ -193,14 +196,14 @@ void loop() {
       duration = pulseIn(echoPin3, HIGH);
   
       // Calculate the distance
-      distanceCm = duration * SOUND_SPEED/2;
+      distanceCmRight = duration * SOUND_SPEED/2;
   
       // Prints the distance in the Serial Monitor
       Serial.print("Distance Right (cm): ");
-      Serial.println(distanceCm);
+      Serial.println(distanceCmRight);
       Serial.print("\n");
-
-      
+      String data = "load_cell:"+String(i)+";top:"+String(distanceCmTop)+";left:"+String(distanceCmLeft)+";right:"+String(distanceCmRight);
+      client.publish("data_sampah",data.c_str());
 //      StaticJsonBuffer<300> JSONbuffer;
 //      JsonObject& JSONencoder = JSONbuffer.createObject();
 //

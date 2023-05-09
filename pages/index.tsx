@@ -7,7 +7,6 @@ import {
   InputLeftAddon,
   Select,
   InputGroup,
-  Image,
 } from "@chakra-ui/react";
 import {
   ResponsiveContainer,
@@ -92,6 +91,7 @@ const data = [
     amt: 2100,
   },
 ];
+
 const DeviceRate = (id: string) => {
   return (
     <Box
@@ -120,6 +120,7 @@ const DeviceRate = (id: string) => {
           <Input w="50%" disabled defaultValue={"1000"}></Input>
         </InputGroup>
       </Box>
+      <Box display="flex" justifyContent="center"></Box>
     </Box>
   );
 };
@@ -127,6 +128,7 @@ const Dashboard = () => {
   const [mqttInput, setMqttInput] = useState("30000");
   const [dataFetched, setDataFetched] = useState(null);
   const [device, setDevice] = useState("dustbin_1");
+
   const fetchData = useCallback(() => {
     axiosFetch.get("api/data").then((res) => setDataFetched(res.data));
   }, []);
@@ -223,6 +225,7 @@ const Dashboard = () => {
             <option value="dustbin_2">Bintang Dustbin</option>
             <option value="dustbin_3">Fahkry Dustbin</option>
           </Select>
+
           {DeviceRate(device)}
         </Box>
         <Box
