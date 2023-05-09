@@ -131,54 +131,66 @@ const DeviceRate = (props: {
           <Input w="50%" disabled defaultValue={"1000"}></Input>
         </InputGroup>
       </Box>
-      <InputGroup paddingX={5} gap={20} size="lg">
-        <InputLeftAddon w="50%">
-          <Text textColor="black">Filter Start Date</Text>
-        </InputLeftAddon>
-        <Box w="50%" textColor="black">
-          <DatePicker
-            dateFormat="dd/MM/yyyy hh:mm"
-            selected={props.startDate}
-            onChange={(date: Date) => {
-              props.setStartDate(date);
-            }}
-            showTimeSelect
-          />
-        </Box>
-      </InputGroup>
-      <InputGroup paddingX={5} gap={20} size="lg">
-        <InputLeftAddon w="50%">
-          <Text textColor="black">Filter End Date</Text>
-        </InputLeftAddon>
-        <Box w="50%" textColor="black">
-          <DatePicker
-            dateFormat="dd/MM/yyyy hh:mm"
-            selected={props.endDate}
-            onChange={(date: Date) => {
-              props.setEndDate(date);
-            }}
-            showTimeSelect
-          />
-        </Box>
-      </InputGroup>
-      <InputGroup paddingX={5} gap={20} size="lg">
-        <InputLeftAddon w="50%">
-          <Text textColor="black">Group By</Text>
-        </InputLeftAddon>
-        <Select
-          w="full"
-          icon={Sussy}
-          background="yellow"
-          textColor="black"
-          defaultValue="day"
-          value={props.groupby}
-          onChange={(e: any) => props.setGroupBy(e.target.value)}
-        >
-          <option value="day">Day</option>
-          <option value="hour">Hour</option>
-          <option value="minute">Minute</option>
-        </Select>
-      </InputGroup>
+      <Box display="flex" justifyContent="center" zIndex={0}>
+        <InputGroup paddingX={5} gap={20} size="lg">
+          <InputLeftAddon w="50%">
+            <Text textColor="black">Group By</Text>
+          </InputLeftAddon>
+          <Select
+            w="full"
+            icon={Sussy}
+            background="yellow"
+            textColor="black"
+            defaultValue="day"
+            value={props.groupby}
+            onChange={(e: any) => props.setGroupBy(e.target.value)}
+          >
+            <option value="day">Day</option>
+            <option value="hour">Hour</option>
+            <option value="minute">Minute</option>
+          </Select>
+        </InputGroup>
+      </Box>
+      <Box display="flex" justifyContent="center" zIndex={0}>
+        <InputGroup paddingX={5} gap={20} size="lg">
+          <InputLeftAddon w="50%">
+            <Text textColor="black">Filter Start Date</Text>
+          </InputLeftAddon>
+          <Box w="50%" textColor="black">
+            <DatePicker
+              dateFormat="dd/MM/yyyy hh:mm"
+              selected={props.startDate}
+              onChange={(date: Date) => {
+                props.setStartDate(date);
+                if (date > props.endDate) {
+                  props.setEndDate(date);
+                }
+              }}
+              showTimeSelect
+            />
+          </Box>
+        </InputGroup>
+      </Box>
+      <Box display="flex" justifyContent="center" zIndex={0}>
+        <InputGroup paddingX={5} gap={20} size="lg">
+          <InputLeftAddon w="50%">
+            <Text textColor="black">Filter End Date</Text>
+          </InputLeftAddon>
+          <Box w="50%" textColor="black">
+            <DatePicker
+              dateFormat="dd/MM/yyyy hh:mm"
+              selected={props.endDate}
+              onChange={(date: Date) => {
+                props.setEndDate(date);
+                if (date < props.startDate) {
+                  props.setStartDate(date);
+                }
+              }}
+              showTimeSelect
+            />
+          </Box>
+        </InputGroup>
+      </Box>
     </Box>
   );
 };
@@ -196,7 +208,7 @@ const Dashboard = () => {
     fetchData();
   }, [fetchData]);
   // const dataxx = "https://bit.ly/Saikyou";
-  console.log("Data", dataFetched, startDate);
+  console.log("Data", dataFetched, startDate, endDate, groupby);
   return (
     <main
       className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
