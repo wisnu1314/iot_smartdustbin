@@ -29,7 +29,7 @@ export default async function handler(
       case "PUT":
         resp = await db
           .collection("status")
-          .doc(body.id)
+          .doc(String(body.id))
           .update({ period: body.period, updated: new Date().toISOString() });
         res.status(201).json({ message: "status updated" });
         break;
