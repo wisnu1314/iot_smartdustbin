@@ -222,7 +222,8 @@ const Dashboard = () => {
     axiosFetch.get("api/status").then(res => {
       if (res.data.data) {
         const mqtt = res.data.data?.find((f: any) => f.id === device);
-        setMqttInput(String(mqtt));
+        console.log("dustbin", mqtt.period);
+        setMqttInput(String(mqtt.period));
       }
     });
   }, [device]);
@@ -259,7 +260,7 @@ const Dashboard = () => {
         backgroundImage={
           device === "dustbin_2"
             ? datax[0]
-            : device === "dustbin_3"
+            : device === "dustbin_1"
             ? datax[1]
             : ""
         }
@@ -318,9 +319,8 @@ const Dashboard = () => {
             value={device}
             onChange={(e: any) => setDevice(e.target.value)}
           >
-            <option value="dustbin_1">Marcel Dustbin</option>
+            <option value="dustbin_1">Fahkry Dustbin</option>
             <option value="dustbin_2">Bintang Dustbin</option>
-            <option value="dustbin_3">Fahkry Dustbin</option>
           </Select>
           <DeviceRate
             id={device}
