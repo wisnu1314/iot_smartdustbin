@@ -8,12 +8,11 @@ import {
 import admin from "../../../firebase";
 
 import type { NextApiRequest, NextApiResponse } from "next";
-
+const db = admin.firestore();
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const db = admin.firestore();
   try {
     let resp;
     let results;
@@ -21,7 +20,7 @@ export default async function handler(
     switch (req.method) {
       case "GET":
         resp = await db.collection("status").get();
-        results = resp.docs.map(entry => {
+        results = resp.docs.map((entry) => {
           return { ...entry.data(), id: entry.id };
         });
         res.status(200).json({ data: results });

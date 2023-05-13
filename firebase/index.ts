@@ -30,5 +30,6 @@ if (!admin.apps.length) {
       privateKey: key.private_key,
     }),
   });
+  admin.firestore().settings({ ignoreUndefinedProperties: true });
 }
 export default admin;

@@ -214,14 +214,24 @@ const Dashboard = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [groupby, setGroupby] = useState("day");
-  const fetchData = useCallback(() => {
-    axiosFetch.get("api/data").then(res => setDataFetched(res.data));
+  const fetchDustbinData = useCallback(() => {
+    axiosFetch.get("api/data").then((res) => setDataFetched(res.data));
   }, []);
+  const fetchDustbinMQTT = useCallback(() => {
+    axiosFetch.get("api/status").then((res) => {
+      if (res.data.data) {
+        const mqtt = res.data.data?.find((f: any) => f.id === device);
+        setMqttInput(String(mqtt));
+      }
+    });
+  }, [device]);
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchDustbinData();
+    fetchDustbinMQTT();
+  }, [fetchDustbinData, fetchDustbinMQTT]);
   // const dataxx = "https://bit.ly/Saikyou";
   console.log("Data", dataFetched, startDate, endDate, groupby);
+  console.log("status", device, Number(mqttInput));
   return (
     <main
       className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
@@ -361,6 +371,20 @@ const Dashboard = () => {
             w="95%"
             h="30px"
             zIndex={0}
+            onClick={(e) => {
+              e.preventDefault();
+              const updateMqttPeriod = async () => {
+                const resp = await axiosFetch.put("api/status", {
+                  period: Number(mqttInput),
+                  id: device,
+                });
+
+                return resp.data;
+              };
+              updateMqttPeriod().then((msg: any) => {
+                alert(msg.message);
+              });
+            }}
           >
             <Text
               fontFamily={inter.className}
