@@ -26,37 +26,38 @@ import client from "../mqtt/index";
 import nodemailer from "nodemailer";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import admin from "@/firebase";
 
-client.on("connect", function () {
-  client.subscribe("data_sampah", function (err: any) {
-    if (err) {
-      console.log(err.message);
-    }
-    console.log("asdssd");
+var lastMsgPerTopic: any = {};
+
+if (!client.connected) {
+  client.on("connect", function () {
+    client.subscribe("data_sampah", function (err: any) {});
+    console.log("connect");
   });
-  client.subscribe("dataStatus", function (err: any) {
-    if (err) {
-      console.log(err.message);
-    }
-  });
-});
-client.on("message", async function (topic: any, message: any) {
-  // message is Buffer
-  // console.log(topic);
+}
+client.on("message", async function (topic: any, message: any, packet: any) {
   if (topic === "data_sampah") {
-    console.log(message.toString("utf-8"));
-    const data_sampah = (message.toString("utf-8") as string).split(";");
-    const db = admin.firestore();
-    const { id } = await db.collection("dustbin_data").add({
-      id: data_sampah[0],
-      weight: parseInt(data_sampah[1]),
-      volume: parseInt(data_sampah[2]),
-      leftSensor: data_sampah[3] == "1" ? true : false,
-      rightSensor: data_sampah[4] == "1" ? true : false,
-      timestamp: new Date().toISOString(),
-    });
-    console.log(id);
+    const messageParsed = message.toString("utf-8") as string;
+    if (!lastMsgPerTopic[topic] || lastMsgPerTopic[topic] != messageParsed) {
+      lastMsgPerTopic[topic] = messageParsed;
+      let data_sampah = lastMsgPerTopic[topic].split(";");
+      console.log(data_sampah);
+
+      axiosFetch
+        .post("api/data", {
+          id: data_sampah[0],
+          weight: parseInt(data_sampah[1]),
+          volume: parseInt(data_sampah[2]),
+          leftSensor: data_sampah[3] == "1" ? true : false,
+          rightSensor: data_sampah[4] == "1" ? true : false,
+          timestamp: new Date().toISOString(),
+          id_firestore: messageParsed,
+        })
+        .then(res => {
+          console.log(res.data);
+        });
+      // lastMsgPerTopic = {};
+    }
   }
 });
 const susicon = require("./Sussy.svg") as string;
@@ -215,10 +216,10 @@ const Dashboard = () => {
   const [endDate, setEndDate] = useState(new Date());
   const [groupby, setGroupby] = useState("day");
   const fetchDustbinData = useCallback(() => {
-    axiosFetch.get("api/data").then((res) => setDataFetched(res.data));
+    axiosFetch.get("api/data").then(res => setDataFetched(res.data));
   }, []);
   const fetchDustbinMQTT = useCallback(() => {
-    axiosFetch.get("api/status").then((res) => {
+    axiosFetch.get("api/status").then(res => {
       if (res.data.data) {
         const mqtt = res.data.data?.find((f: any) => f.id === device);
         setMqttInput(String(mqtt));
@@ -371,7 +372,7 @@ const Dashboard = () => {
             w="95%"
             h="30px"
             zIndex={0}
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault();
               const updateMqttPeriod = async () => {
                 const resp = await axiosFetch.put("api/status", {

@@ -213,18 +213,14 @@ void loop() {
       volume = (height-distanceCmTop)*width*length;  
       leftValidation = (distanceCmLeft<15 )?1:0;    
       rightValidation = (distanceCmRight<15 )?1:0;  
-
-      // Serial.println(1000);
-      Serial.println(String((millis()-lastMillis))+" buka "+String(lastMillis)+" millis "+ String(millis()));
+      Serial.println(millis());
+      
       if(volume < -2000 && (millis()-lastMillis)<=period && (millis()-lastMillis)>=period-10000){
         Serial.println("harusnya anda ga ngirim");
         // lastMillis=(double)(lastMillis+additionTime);
-        lastMillis += 20000ULL;
-        Serial.println("Invalid " + String(lastMillis - millis()));
+        lastMillis += 20000ULL;        
         invalid = true;
-      }
-      
-      Serial.println(String((millis()-lastMillis)) + " " + String((lastMillis - millis()))+" tutup "+String(lastMillis)+" millis "+String(millis()));
+      }      
       if(invalid){
         invalid = false;
         lastMillis = millis() - 10000ULL;
@@ -232,9 +228,8 @@ void loop() {
       else{
         if((((millis()-lastMillis)>=period) || (leftValidation==true && rightValidation==true) || i>=9000) && !invalid){
             lastMillis=millis();
-            String data = "id: "+id+"; load_cell: "+String(i)+";volume: "+String(volume)+";left: "+String(leftValidation)+"; right: "+String(rightValidation);
-            Serial.println(data);
-            Serial.println(lastMillis + " " + millis());      
+            String data = id+";"+String(i)+";"+String(volume)+";"+String(leftValidation)+";"+String(rightValidation)+";"+String(millis());
+            Serial.println(data);                  
             client.publish("data_sampah",data.c_str());
           }
         }
