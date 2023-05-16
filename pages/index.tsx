@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React from "react";
 import {
   Box,
@@ -249,8 +250,8 @@ const Dashboard = () => {
     fetchDustbinData();
     fetchDustbinMQTT();
 
-    //groupingData();
-  }, [fetchDustbinData, fetchDustbinMQTT, groupingData]);
+    groupingData();
+  }, [fetchDustbinMQTT, groupingData]);
   useEffect(() => {}, []);
   // const dataxx = "https://bit.ly/Saikyou";
   // console.log("Data1", dustbin1);
