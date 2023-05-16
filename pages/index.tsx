@@ -53,7 +53,7 @@ client.on("message", async function (topic: any, message: any, packet: any) {
           timestamp: new Date().toISOString(),
           id_firestore: messageParsed,
         })
-        .then(res => {
+        .then((res) => {
           console.log(res.data);
         });
       // lastMsgPerTopic = {};
@@ -210,16 +210,20 @@ const DeviceRate = (props: {
 };
 const Dashboard = () => {
   const [mqttInput, setMqttInput] = useState("30000");
-  const [dataFetched, setDataFetched] = useState(null);
+  const [dataFetched, setDataFetched] = useState<any>({ data: [] });
   const [device, setDevice] = useState("dustbin_1");
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [groupby, setGroupby] = useState("day");
+  const [dustbin1, setDustbin1] = useState<any[]>([]);
+  const [dustbin2, setDustbin2] = useState<any[]>([]);
+  // const delay = (ms: number) =>
+  //   new Promise((resolve) => setTimeout(resolve, ms));
   const fetchDustbinData = useCallback(() => {
-    axiosFetch.get("api/data").then(res => setDataFetched(res.data));
+    axiosFetch.get("api/data").then((res) => setDataFetched(res.data));
   }, []);
   const fetchDustbinMQTT = useCallback(() => {
-    axiosFetch.get("api/status").then(res => {
+    axiosFetch.get("api/status").then((res) => {
       if (res.data.data) {
         const mqtt = res.data.data?.find((f: any) => f.id === device);
         console.log("dustbin", mqtt.period);
@@ -227,13 +231,31 @@ const Dashboard = () => {
       }
     });
   }, [device]);
+  const groupingData = useCallback(() => {
+    // var temp1 = [];
+    // var temp2 = []
+    if (dataFetched) {
+      const temp1 = dataFetched.data.filter((d: any) => {
+        return d["id"].includes("dustbin_1");
+      });
+      const temp2 = dataFetched.data.filter((d: any) => {
+        return d["id"].includes("dustbin_2");
+      });
+      setDustbin1(temp1);
+      setDustbin2(temp2);
+    }
+  }, [dataFetched]);
   useEffect(() => {
     fetchDustbinData();
     fetchDustbinMQTT();
-  }, [fetchDustbinData, fetchDustbinMQTT]);
+
+    //groupingData();
+  }, [fetchDustbinData, fetchDustbinMQTT, groupingData]);
+  useEffect(() => {}, []);
   // const dataxx = "https://bit.ly/Saikyou";
-  console.log("Data", dataFetched, startDate, endDate, groupby);
-  console.log("status", device, Number(mqttInput));
+  // console.log("Data1", dustbin1);
+  // console.log("Data2", dustbin2);
+  // console.log("Data", dataFetched);
   return (
     <main
       className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
@@ -372,7 +394,7 @@ const Dashboard = () => {
             w="95%"
             h="30px"
             zIndex={0}
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault();
               const updateMqttPeriod = async () => {
                 const resp = await axiosFetch.put("api/status", {
