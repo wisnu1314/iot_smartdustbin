@@ -28,39 +28,6 @@ import nodemailer from "nodemailer";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-var lastMsgPerTopic: any = {};
-
-if (!client.connected) {
-  client.on("connect", function () {
-    client.subscribe("data_sampah", function (err: any) {});
-    console.log("connect");
-  });
-}
-client.on("message", async function (topic: any, message: any, packet: any) {
-  if (topic === "data_sampah") {
-    const messageParsed = message.toString("utf-8") as string;
-    if (!lastMsgPerTopic[topic] || lastMsgPerTopic[topic] != messageParsed) {
-      lastMsgPerTopic[topic] = messageParsed;
-      let data_sampah = lastMsgPerTopic[topic].split(";");
-      console.log(data_sampah);
-
-      axiosFetch
-        .post("api/data", {
-          id: data_sampah[0],
-          weight: parseInt(data_sampah[1]),
-          volume: parseInt(data_sampah[2]),
-          leftSensor: data_sampah[3] == "1" ? true : false,
-          rightSensor: data_sampah[4] == "1" ? true : false,
-          timestamp: new Date().toISOString(),
-          id_firestore: messageParsed,
-        })
-        .then((res) => {
-          console.log(res.data);
-        });
-      // lastMsgPerTopic = {};
-    }
-  }
-});
 const susicon = require("./Sussy.svg") as string;
 const datax = ["https://bit.ly/Saikyou", "https://bit.ly/SekaiSaikyou"];
 const inter = Inter({ subsets: ["latin"] });
@@ -221,10 +188,10 @@ const Dashboard = () => {
   // const delay = (ms: number) =>
   //   new Promise((resolve) => setTimeout(resolve, ms));
   const fetchDustbinData = useCallback(() => {
-    axiosFetch.get("api/data").then((res) => setDataFetched(res.data));
+    axiosFetch.get("/data").then((res) => setDataFetched(res.data));
   }, []);
   const fetchDustbinMQTT = useCallback(() => {
-    axiosFetch.get("api/status").then((res) => {
+    axiosFetch.get("/status").then((res) => {
       if (res.data.data) {
         const mqtt = res.data.data?.find((f: any) => f.id === device);
         console.log("dustbin", mqtt.period);
@@ -232,30 +199,39 @@ const Dashboard = () => {
       }
     });
   }, [device]);
-  const groupingData = useCallback(() => {
-    // var temp1 = [];
-    // var temp2 = []
-    if (dataFetched) {
+  // const groupingData = useCallback(() => {
+  //   // var temp1 = [];
+  //   // var temp2 = []
+  //   if (dataFetched) {
+  //     const temp1 = dataFetched.data.filter((d: any) => {
+  //       return d.id.includes("dustbin_1");
+  //     });
+  //     const temp2 = dataFetched.data.filter((d: any) => {
+  //       return d.id.includes("dustbin_2");
+  //     });
+  //     setDustbin1(temp1);
+  //     setDustbin2(temp2);
+  //   }
+  // }, [dataFetched]);
+  useEffect(() => {
+    fetchDustbinData();
+    fetchDustbinMQTT();
+  }, []);
+
+  useEffect(() => {
+    if (dataFetched.data.length !== 0) {
       const temp1 = dataFetched.data.filter((d: any) => {
-        return d["id"].includes("dustbin_1");
+        return d.id.includes("dustbin_1");
       });
       const temp2 = dataFetched.data.filter((d: any) => {
-        return d["id"].includes("dustbin_2");
+        return d.id.includes("dustbin_2");
       });
       setDustbin1(temp1);
       setDustbin2(temp2);
     }
   }, [dataFetched]);
-  useEffect(() => {
-    fetchDustbinData();
-    fetchDustbinMQTT();
-
-    groupingData();
-  }, [fetchDustbinMQTT, groupingData]);
-  useEffect(() => {}, []);
   // const dataxx = "https://bit.ly/Saikyou";
-  // console.log("Data1", dustbin1);
-  // console.log("Data2", dustbin2);
+  // console.log("Data", dustbin1, dustbin2);
   // console.log("Data", dataFetched);
   return (
     <main
@@ -294,29 +270,29 @@ const Dashboard = () => {
         <ResponsiveContainer width="30%" height="50%">
           <LineChart
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            data={data}
+            data={device === "dustbin_1" ? dustbin1 : dustbin2}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
+            <XAxis dataKey="timestamp" />
             <YAxis />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="pv" stroke="#8884d8" />
-            <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+            <Line type="monotone" dataKey="volume" stroke="#8884d8" />
+            {/* <Line type="monotone" dataKey="uv" stroke="#82ca9d" /> */}
           </LineChart>
         </ResponsiveContainer>
         <ResponsiveContainer width="30%" height="50%">
           <LineChart
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            data={data}
+            data={device === "dustbin_1" ? dustbin1 : dustbin2}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
+            <XAxis dataKey="timestamp" />
             <YAxis />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="pv" stroke="#8884d8" />
-            <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+            <Line type="monotone" dataKey="weight" stroke="#8884d8" />
+            {/* <Line type="monotone" dataKey="uv" stroke="#82ca9d" /> */}
           </LineChart>
         </ResponsiveContainer>
         <Box
@@ -398,7 +374,7 @@ const Dashboard = () => {
             onClick={(e) => {
               e.preventDefault();
               const updateMqttPeriod = async () => {
-                const resp = await axiosFetch.put("api/status", {
+                const resp = await axiosFetch.put("/status", {
                   period: Number(mqttInput),
                   id: device,
                 });
