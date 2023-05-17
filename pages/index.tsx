@@ -299,13 +299,13 @@ const Dashboard = () => {
         lineHeight="100%"
         gap={10}
         paddingX={4}
-        backgroundImage={
-          device === "dustbin_2"
-            ? datax[0]
-            : device === "dustbin_1"
-            ? datax[1]
-            : ""
-        }
+        // backgroundImage={
+        //   device === "dustbin_2"
+        //     ? datax[0]
+        //     : device === "dustbin_1"
+        //     ? datax[1]
+        //     : ""
+        // }
         backgroundClip="content-box"
         backgroundRepeat="no-repeat"
         backgroundSize="100px 100px"
