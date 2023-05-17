@@ -84,8 +84,13 @@ const DeviceRate = (props: {
   setEndDate: (selectedEnd: Date) => void;
   groupby: string;
   setGroupBy: (selectedGroup: string) => void;
+  dustbin: any[];
+  setDustbin: (dustbin: any[]) => void;
+  setDustbin1: (dustbin1: any[]) => void;
+  setDustbin2: (dustbin2: any[]) => void;
+  setFiltered: (filtered: boolean) => void;
 }) => {
-  console.log("props", props.startDate);
+  // console.log("props", props.startDate);
   return (
     <Box
       display="flex"
@@ -123,10 +128,11 @@ const DeviceRate = (props: {
             icon={Sussy}
             background="yellow"
             textColor="black"
-            defaultValue="day"
+            defaultValue="none"
             value={props.groupby}
             onChange={(e: any) => props.setGroupBy(e.target.value)}
           >
+            <option value="none">None</option>
             <option value="day">Day</option>
             <option value="hour">Hour</option>
             <option value="minute">Minute</option>
@@ -144,7 +150,7 @@ const DeviceRate = (props: {
               selected={props.startDate}
               onChange={(date: Date) => {
                 props.setStartDate(date);
-                if (date > props.endDate) {
+                if (date.getTime() > props.endDate.getTime()) {
                   props.setEndDate(date);
                 }
               }}
@@ -164,7 +170,7 @@ const DeviceRate = (props: {
               selected={props.endDate}
               onChange={(date: Date) => {
                 props.setEndDate(date);
-                if (date < props.startDate) {
+                if (date.getTime() < props.startDate.getTime()) {
                   props.setStartDate(date);
                 }
               }}
@@ -173,6 +179,41 @@ const DeviceRate = (props: {
           </Box>
         </InputGroup>
       </Box>
+      <Button
+        background="yellow"
+        border="5px solid"
+        borderColor="black"
+        borderRadius={20}
+        w="95%"
+        h="30px"
+        zIndex={0}
+        onClick={(e) => {
+          e.preventDefault();
+
+          axiosFetch
+            .get(
+              `/data?start=${props.startDate.toISOString()}&end=${props.endDate.toISOString()}`
+            )
+            .then((res) => {
+              props.setDustbin(res.data.data);
+              const temp = res.data.data;
+
+              const temp1 = temp.filter((d: any) => {
+                return d.id.includes("dustbin_1");
+              });
+              const temp2 = temp.filter((d: any) => {
+                return d.id.includes("dustbin_2");
+              });
+              props.setDustbin1(temp1);
+              props.setDustbin2(temp2);
+              props.setFiltered(true);
+            });
+        }}
+      >
+        <Text fontFamily={inter.className} textColor="black" fontWeight="bold">
+          Apply
+        </Text>
+      </Button>
     </Box>
   );
 };
@@ -182,11 +223,13 @@ const Dashboard = () => {
   const [device, setDevice] = useState("dustbin_1");
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+  const [isFiltered, setIsFiltered] = useState(false);
   const [groupby, setGroupby] = useState("day");
   const [dustbin1, setDustbin1] = useState<any[]>([]);
   const [dustbin2, setDustbin2] = useState<any[]>([]);
-  // const delay = (ms: number) =>
-  //   new Promise((resolve) => setTimeout(resolve, ms));
+  const [filteredDustbin, setFilteredDustbin] = useState<any[]>([]);
+  const [filteredDustbin1, setFilteredDustbin1] = useState<any[]>([]);
+  const [filteredDustbin2, setFilteredDustbin2] = useState<any[]>([]);
   const fetchDustbinData = useCallback(() => {
     axiosFetch.get("/data").then((res) => setDataFetched(res.data));
   }, []);
@@ -194,7 +237,7 @@ const Dashboard = () => {
     axiosFetch.get("/status").then((res) => {
       if (res.data.data) {
         const mqtt = res.data.data?.find((f: any) => f.id === device);
-        console.log("dustbin", mqtt.period);
+        //console.log("dustbin", mqtt.period);
         setMqttInput(String(mqtt.period));
       }
     });
@@ -232,7 +275,7 @@ const Dashboard = () => {
   }, [dataFetched]);
   // const dataxx = "https://bit.ly/Saikyou";
   // console.log("Data", dustbin1, dustbin2);
-  // console.log("Data", dataFetched);
+  console.log("Data", filteredDustbin1, filteredDustbin2);
   return (
     <main
       className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
@@ -270,10 +313,18 @@ const Dashboard = () => {
         <ResponsiveContainer width="30%" height="50%">
           <LineChart
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            data={device === "dustbin_1" ? dustbin1 : dustbin2}
+            data={
+              device === "dustbin_1" && isFiltered
+                ? filteredDustbin1
+                : device === "dustbin_2" && isFiltered
+                ? filteredDustbin2
+                : device === "dustbin_1"
+                ? dustbin1
+                : dustbin2
+            }
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="timestamp" />
+            <XAxis dataKey="timestamp" label="time" />
             <YAxis />
             <Tooltip />
             <Legend />
@@ -284,10 +335,18 @@ const Dashboard = () => {
         <ResponsiveContainer width="30%" height="50%">
           <LineChart
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            data={device === "dustbin_1" ? dustbin1 : dustbin2}
+            data={
+              device === "dustbin_1" && isFiltered
+                ? filteredDustbin1
+                : device === "dustbin_2" && isFiltered
+                ? filteredDustbin2
+                : device === "dustbin_1"
+                ? dustbin1
+                : dustbin2
+            }
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="timestamp" />
+            <XAxis dataKey="timestamp" label="time" />
             <YAxis />
             <Tooltip />
             <Legend />
@@ -329,6 +388,11 @@ const Dashboard = () => {
             setEndDate={setEndDate}
             groupby={groupby}
             setGroupBy={setGroupby}
+            dustbin={filteredDustbin}
+            setDustbin={setFilteredDustbin}
+            setDustbin1={setFilteredDustbin1}
+            setDustbin2={setFilteredDustbin2}
+            setFiltered={setIsFiltered}
           />
         </Box>
         <Box
