@@ -439,7 +439,7 @@ const Dashboard = () => {
               e.preventDefault();
               const updateMqttPeriod = async () => {
                 const resp = await axiosFetch.put("/status", {
-                  period: Number(mqttInput),
+                  period: String(mqttInput),
                   id: device,
                 });
 
